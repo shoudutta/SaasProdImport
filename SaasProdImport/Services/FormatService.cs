@@ -28,10 +28,12 @@ namespace SaasProdImport.Services
 
         public int AddFormat(string name)
         {
-            Format toBeAdded = new Format();
-            toBeAdded.FormatName = name;
-            //Get the next id from the current count of the list of formats
-            toBeAdded.FormatId = GetFormats().Count() + 1;
+            Format toBeAdded = new Format
+            {
+                FormatName = name,
+                //Get the next id from the current count of the list of formats
+                FormatId = GetFormats().Count() + 1
+            };
 
             this.context.AddFormat(toBeAdded);
 
