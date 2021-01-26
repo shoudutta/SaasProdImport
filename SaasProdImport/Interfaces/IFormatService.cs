@@ -11,7 +11,14 @@ namespace SaasProdImport.Interfaces
     public interface IFormatService
     {
         List<Format> GetFormats();
+
+        /// <summary>
+        /// Provides an end point for retrieving the Format object for a given format extension.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         Format GetFormatByName(string name);
+
         int AddFormat(string name);
 
     }

@@ -28,39 +28,39 @@ namespace SaasProdImport.Services
 
         public void ReadProductManifests()
         {
-            //Console.WriteLine("Enter format?");
-            //string fileFormat = Console.ReadLine();
-            //var format = formatService.GetFormatByName(fileFormat);
-            //var configForFormat = configurationService.GetConfigurationForFormat(format.FormatId);
-            //Console.WriteLine($"\n Name - {configForFormat.NameTag}\n Configuration - {configForFormat.ConfigTag} \n Twitter - {configForFormat.TwitterTag}");
             Console.WriteLine("Enter directory?");
             string manifestLocation = Console.ReadLine();
+            // Retrieve the files in the location and iterate over each and read the contents
             List<string> filesInDirectory = Directory.GetFiles(manifestLocation).ToList();
             filesInDirectory.ForEach(x =>
             {
-                //ReadManifest(x.Substring(x.LastIndexOf('\\') + 1));
                 string formatExtension = GetFileFormat(x);
                 var format = formatService.GetFormatByName(formatExtension);
                 var configForFormat = configurationService.GetConfigurationForFormat(format.FormatId);
                 try
                 {
-                    ReadManifest(x, formatExtension, configForFormat, out List<Product> products);
+                    // Read the data from the manifest file
+                    string fileData = ReadManifest(x);
+                    // Parse the file into products
+                    configurationService.ReadProductsFromFile(fileData, formatExtension, configForFormat, out List<Product> products);                    
                     products.ForEach(product =>
                     {
                         product.ProductId = productService.GetNextId();
                         productService.AddProduct(product);
+                        // Display the newly imported product and its details - sample output
                         DisplayImportedProduct(product);
                     });
                 }
                 catch (NotImplementedException ex)
                 {
-
+                    Console.WriteLine(ex.Message);
                 }
             });
         }
-
+        
         public void AddConfiguration()
         {
+            // Accept the format extension and configuration details from the user
             Console.WriteLine("Enter format extension?");
             string formatExtension = Console.ReadLine();
             int formatId = formatService.AddFormat(formatExtension);
@@ -89,6 +89,7 @@ namespace SaasProdImport.Services
 
         public void DisplayProducts()
         {
+            // Iterate the set of products and display the details for each
             var products = productService.GetProducts();
             products.ForEach(product =>
             {
@@ -96,7 +97,7 @@ namespace SaasProdImport.Services
             });
         }
 
-        private static void ReadManifest(string fileName, string fileFormat, Configuration configuration, out List<Product> products)
+        private static string ReadManifest(string fileName)
         {
             Console.WriteLine("Importing - " + fileName);
             string fileData = string.Empty;
@@ -112,94 +113,9 @@ namespace SaasProdImport.Services
                         fileData += "\n";
                     }
                 }
-                //Console.WriteLine(fileData);
-            }
-            try
-            {
-                ReadProductFromFileData(fileData, fileFormat, configuration, out products);
-            }
-            catch (NotImplementedException ex)
-            {
-                Console.WriteLine(ex.Message);
-                throw ex;
             }
 
-        }
-
-        private static void ReadProductFromFileData(string fileData, string fileFormat, Configuration configuration, out List<Product> products)
-        {
-            switch (fileFormat)
-            {
-                case "json":
-                    ReadProductFromJson(fileData, configuration, out products);
-                    break;
-                case "yaml":
-                    ReadProductFromYaml(fileData, configuration, out products);
-                    break;
-                default:
-                    throw new NotImplementedException("Sorry, this format is not yet implemented");
-            }
-
-        }
-
-        private static void ReadProductFromJson(string fileData, Configuration configuration, out List<Product> products)
-        {
-            products = new List<Product>();
-            dynamic fileConfigs = JsonConvert.DeserializeObject<ExpandoObject>(fileData, new ExpandoObjectConverter());
-            foreach(var prod in (IEnumerable<dynamic>)fileConfigs.products)
-            {
-                Product product = new Product();
-                foreach(var entry in prod)
-                {
-                    if (entry.Key.ToString().ToLower().Equals(configuration.ConfigTag.ToLower()))
-                    {
-                        string prodConfig = string.Empty;
-                        foreach(string value in entry.Value)
-                        {
-                            prodConfig = prodConfig == string.Empty ? value : prodConfig + "," + value;
-                        }
-                        product.ProductConfiguration = prodConfig;
-                    }
-                    else if (entry.Key.ToString().ToLower().Equals(configuration.NameTag.ToLower()))
-                    {
-                        product.ProductName = entry.Value.ToString();
-                    }
-                    else if (entry.Key.ToString().ToLower().Equals(configuration.TwitterTag.ToLower()))
-                    {
-                        product.ProductTwitter = entry.Value.ToString();
-                    }
-                }
-                products.Add(product);
-            }
-        }
-
-        private static void ReadProductFromYaml(string fileData, Configuration configuration, out List<Product> products)
-        {
-            products = new List<Product>();
-            Product product;
-            var deserializer = new Deserializer();
-            var result = deserializer.Deserialize<List<Hashtable>>(new StringReader(fileData));
-            foreach (var item in result)
-            {
-                product = new Product();
-
-                foreach (DictionaryEntry entry in item)
-                {
-                    if (entry.Key.ToString().ToLower().Equals(configuration.ConfigTag.ToLower()))
-                    {
-                        product.ProductConfiguration = entry.Value.ToString();
-                    }
-                    else if (entry.Key.ToString().ToLower().Equals(configuration.NameTag.ToLower()))
-                    {
-                        product.ProductName = entry.Value.ToString();
-                    }
-                    else if (entry.Key.ToString().ToLower().Equals(configuration.TwitterTag.ToLower()))
-                    {
-                        product.ProductTwitter = entry.Value.ToString();
-                    }
-                }
-                products.Add(product);
-            }
+            return fileData;
         }
 
         private static string GetFileFormat(string v)

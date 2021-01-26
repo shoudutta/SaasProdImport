@@ -10,8 +10,11 @@ namespace SaasProdImport.Interfaces
     public interface IManifestService
     {
         void ReadProductManifests();
+
         void AddConfiguration();
+
         void DisplayConfigurations();
+
         void DisplayProducts();
     }
 }

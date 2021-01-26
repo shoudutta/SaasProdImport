@@ -11,11 +11,13 @@ namespace SaasProdImport.Interfaces
     public interface IProductService
     {
         List<Product> GetProducts();
+
         /// <summary>
         /// Returns the next id for products collection - needed to streamline mock behaviour of the db
         /// </summary>
         /// <returns></returns>
         int GetNextId();
+
         void AddProduct(Product product);
 
     }

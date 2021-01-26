@@ -18,6 +18,7 @@ namespace SaasProdImport.Services
 
         public int GetNextId()
         {
+            //Return the count of the current list incremented by 1
             return this.context.GetProducts().Count() + 1;
         }
 
