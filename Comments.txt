@@ -1,0 +1,5 @@
+ - With more time, I would have liked to implement more robust checks while adding objects to the datasets - example, doing a unique check on the format name, checking if a configuration exists for a format etc. I also had a different design approach, but for the want of time I followed the design I am more familiar with.
+ - Main project - SaasProdImport.csproj
+ - Unit tests - SaasProdImport.UnitTests.csproj
+ - To run the code, set the start up project to SaasProdImport and click F5
+ - To run the unit tests, open the solution on Visual Studio, go to Test -> Run -> All Tests
