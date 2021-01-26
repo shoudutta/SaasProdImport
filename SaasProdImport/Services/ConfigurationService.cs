@@ -7,7 +7,7 @@ using System.Text;
 
 namespace SaasProdImport.Services
 {
-    class ConfigurationService : IConfigurationService
+    public class ConfigurationService : IConfigurationService
     {
         private readonly IContext context;
 
