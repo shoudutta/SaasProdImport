@@ -1,0 +1,76 @@
+Answer 1 - 
+
+select * from users where id in (2,3,4)
+
+Answer 2 - 
+
+select u.id,u.first_name,u.last_name,tempResult.basic,tempResult.premium from (
+select tempBasic.id,tempBasic.basic,tempPremium.premium from (
+select u.id,count(tempListings.id) as basic from users u left join(
+select * from listings where status = 2
+ ) as tempListings on u.id = tempListings.user_id
+ group by u.id
+) as tempBasic
+full join (
+select * from (
+select u.id,count(tempListings.id) as premium from users u left join(
+select * from listings where status = 3
+ ) as tempListings on u.id = tempListings.user_id
+ group by u.id
+)as tempPremium 
+) as tempPremium
+on tempBasic.id = tempPremium.id
+) as tempResult join users u on tempResult.id = u.id where u.status = 2
+order by u.id 
+
+Answer 3 - 
+
+select u.id,u.first_name,u.last_name,tempResult.basic,tempResult.premium from (
+select tempBasic.id,tempBasic.basic,tempPremium.premium from (
+select u.id,count(tempListings.id) as basic from users u left join(
+select * from listings where status = 2
+ ) as tempListings on u.id = tempListings.user_id
+ group by u.id
+) as tempBasic
+full join (
+select * from (
+select u.id,count(tempListings.id) as premium from users u left join(
+select * from listings where status = 3
+ ) as tempListings on u.id = tempListings.user_id
+ group by u.id
+)as tempPremium 
+) as tempPremium
+on tempBasic.id = tempPremium.id
+) as tempResult join users u on tempResult.id = u.id where u.status = 2 and tempResult.premium>=1
+order by u.id 
+
+Answer 4 - 
+
+select u.id, u.first_name, u.last_name, tempYear.currency, tempYear.revenue, tempYear.years from users u left join (
+ select * from(
+select u.id,u.first_name,u.last_name,c.currency,sum(c.price) as revenue, extract(year from c.created) as years from users u join listings l on u.id = l.user_id join clicks c on l.id = c.listing_id where u.status = 2 group by (u.id,u.first_name,u.last_name,c.currency,c.created)
+) as temp where years = 2013
+) as tempYear on u.id = tempYear.id where u.status = 2
+
+Answer 5 - 
+
+INSERT INTO public.clicks(
+            listing_id, price, currency, created)
+    VALUES (3, 4, 'USD', now());
+Id - 33
+
+Answer 6 - 
+
+select name from listings except (
+select name from(
+select l.name,extract(year from c.created) as year from listings l left join clicks c on l.id = c.listing_id group by l.id,l.name,c.created
+) as temp where year = 2013
+)
+
+Answer 7 - 
+
+Answer 8 -
+select u.id,u.first_name,u.last_name,string_agg(l.name::text, ',') as listing_names from users u join 
+listings l on u.id = l.user_id
+where u.status = 2
+group by u.id,u.first_name,u.last_name
